@@ -1,4 +1,6 @@
 import os
+import qrgen
+import io
 from dotenv import load_dotenv
 from pyrogram import Client, filters
 from pyrogram.enums import ParseMode
@@ -6,20 +8,25 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQ
 
 
 class Bot(Client):
-    async def send_tip_info(self, chat_id, photo, title, addr, description='Send only CRYPT to this address'):
+    def generate_qr(self, **kwargs):
+        for k, v in kwargs:
+            print(k, v)
+
+
+    async def send_tip_info(self, chat_id, title):
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
                 [InlineKeyboardButton('Back', callback_data='back')],
             ]
         )
-        description.replace('CRYPT', title)
-        caption = f'**{title}**\n'\
-            f'{description}\n'\
-            f'```{addr}```'
-        await self.send_photo(chat_id, photo, caption, reply_markup=keyboard)
-        print('tip info')
 
-    
+        addr = qrgen.get_addr('wallets.json', title)
+        photo = qrgen.generate_qr(addr, title)
+        bio = io.BytesIO()
+        photo.save(bio, format='JPEG')
+        bio.seek(0)
+        caption = f'`{addr}`'
+        await self.send_photo(chat_id, bio, caption=caption, parse_mode=ParseMode.MARKDOWN, reply_markup=keyboard) 
 
 
 load_dotenv()
@@ -74,15 +81,6 @@ async def callback_query(bot: Bot, query: CallbackQuery):
     data = query.data
     
     match data:
-        case 'USDT TRC20':
-            await bot.delete_messages(query.message.chat.id, query.message.id)
-            await bot.send_tip_info(query.message.chat.id, 'https://i.stack.imgur.com/Z1NRq.png', query.data, 'TAVxjUzxYge5Ax2sA6bJHQHC1zw7uP3Je2')
-        case 'USDT TON':
-            pass
-        case 'TON':
-            pass
-        case 'BTC':
-            pass
         case 'back':
             await bot.delete_messages(query.message.chat.id, query.message.id)
             await bot.send_message(query.message.chat.id, 'Choose a tipping currency:', reply_markup=keyboard)
@@ -92,7 +90,8 @@ async def callback_query(bot: Bot, query: CallbackQuery):
                 await bot.delete_messages(query.message.chat.id, message_id)
                 message_id -= 1
         case _:
-            pass
+            await bot.delete_messages(query.message.chat.id, query.message.id)
+            await bot.send_tip_info(query.message.chat.id, query.data)
 
 
 if __name__ == "__main__":

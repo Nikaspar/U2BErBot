@@ -1,3 +1,5 @@
 python-dotenv
 pyrogram
 tgcrypto
+qrcode[pil]
+numpy

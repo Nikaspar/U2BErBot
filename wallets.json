@@ -1,0 +1,20 @@
+{
+    "wallets": [
+        {
+            "name": "USDT TRC20",
+            "address": "TAVxjUzxYge5Ax2sA6bJHQHC1zw7uP3Je2"
+        },
+        {
+            "name": "USDT TON",
+            "address": "UQDcb00BGLudG58aHODG_-CDffrziS9cjBUZ8fd6v3FIXP6n"
+        },
+        {
+            "name": "TON",
+            "address": "UQDcb00BGLudG58aHODG_-CDffrziS9cjBUZ8fd6v3FIXP6n"
+        },
+        {
+            "name": "BTC",
+            "address": "1DAFvBq83vq7pJ7j7CGe4sD4ZBXmTremJx"
+        }
+    ]
+}
