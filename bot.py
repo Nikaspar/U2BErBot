@@ -1,18 +1,14 @@
+import asyncio
 import os
 import qrgen
 import io
 from dotenv import load_dotenv
 from pyrogram import Client, filters
-from pyrogram.enums import ParseMode
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from pyrogram.enums import ParseMode, ChatAction
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery, Message
 
 
 class Bot(Client):
-    def generate_qr(self, **kwargs):
-        for k, v in kwargs:
-            print(k, v)
-
-
     async def send_tip_info(self, chat_id, title):
         keyboard = InlineKeyboardMarkup(
             inline_keyboard=[
@@ -57,7 +53,7 @@ keyboard = InlineKeyboardMarkup(
 clicks = 2
 
 @bot.on_message(filters.command(['start', 'help']))
-async def start(bot: Bot, message):
+async def start(bot: Bot, message: Message):
     await bot.send_message(message.chat.id,
                     'Hey, I\'m U2BErBot! I can help you to download videos from YouTube.\n'\
                     'I am able to extract both video and audio tracks from the video.\n\n'\
@@ -66,21 +62,23 @@ async def start(bot: Bot, message):
 
 
 @bot.on_message(filters.command('tip'))
-async def tip(bot: Bot, message):
-    await bot.send_message(
-        message.chat.id,
-        'Choose a tipping currency:',
-        reply_markup=keyboard
-    )
+async def tip(bot: Bot, message: Message):
+    await bot.send_message(message.chat.id, 'Choose a tipping currency:', reply_markup=keyboard)
+
+
+@bot.on_message(filters.regex(r'^.*(?:youtube.|youtu.).*$'))
+async def link_handler(bot: Bot, message: Message):
+    #TODO download video and audio
+    pass
+    
+
 
 @bot.on_callback_query()
 async def callback_query(bot: Bot, query: CallbackQuery):
     global clicks
     clicks += 1
     
-    data = query.data
-    
-    match data:
+    match query.data:
         case 'back':
             await bot.delete_messages(query.message.chat.id, query.message.id)
             await bot.send_message(query.message.chat.id, 'Choose a tipping currency:', reply_markup=keyboard)
